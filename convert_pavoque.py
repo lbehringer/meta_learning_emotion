@@ -55,5 +55,5 @@ def create_segment(data, samplerate, start, stop):
     startframe = int(start/100*samplerate)
     stopframe = int(stop/100*samplerate)
     data = data[startframe:stopframe]
-    out_file = "pavoque_out_" + str(start).zfill(6) + "_" + str(stop).zfill(6) + ".wav"
+    out_file = str(start).zfill(6) + "_" + str(stop).zfill(6) + ".wav"
     sf.write(out_file, data, samplerate)

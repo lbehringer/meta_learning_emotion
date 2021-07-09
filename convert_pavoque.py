@@ -1,4 +1,5 @@
 import re
+import os
 import numpy as np
 import soundfile as sf
 
@@ -9,7 +10,8 @@ def get_pavoque_transcript(yaml):
     start = str()
     end = str()
     text = str()
-    transcript_filename = 'transcript_' + yaml.replace(".yaml", ".txt")
+    yaml_head_tail = os.path.split(yaml)
+    transcript_filename = 'transcript_' + yaml_head_tail[1].replace(".yaml", ".txt")
     # with open(transcript_filename, 'r+', encoding='utf-8') as clear_file:
     #     clear_file.truncate(0)
     with open(yaml, 'r', encoding='utf-8') as f:
@@ -28,10 +30,10 @@ def get_pavoque_transcript(yaml):
                 if start != "" and end != "" and text != "":
                     transcript_line = start + "_" + end + "\t" + text
                     # print(transcript_line)
-                    with open(transcript_filename, 'a', encoding='utf-8') as out_file:
+                    with open(os.path.join("data", "pavoque", "transcripts", transcript_filename), 'a', encoding='utf-8') as out_file:
                         out_file.write(transcript_line)
                 start, end, text = str(), str(), str()
-        return transcript_filename
+        return os.path.join(yaml_head_tail[0], "transcripts",transcript_filename)
 
 
 """takes as input a transcript file and the audio file; 
@@ -56,4 +58,5 @@ def create_segment(data, samplerate, start, stop):
     stopframe = int(stop/100*samplerate)
     data = data[startframe:stopframe]
     out_file = str(start).zfill(6) + "_" + str(stop).zfill(6) + ".wav"
-    sf.write(out_file, data, samplerate)
+    out_path = os.path.join("data", "pavoque", out_file)
+    sf.write(out_path, data, samplerate)

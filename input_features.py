@@ -1,20 +1,22 @@
 import librosa
-import torch
+import torch 
 import torchaudio
 import numpy
 
 
 # convert audio to spectrogram and normalize
 def audio_to_spectrogram(path_audio, offset, duration, n_mels):
-    signal = librosa.load(path_audio, sr=22050, offset=offset, duration=duration)[
+    signal = librosa.load(path_audio, sr=16000, offset=offset, duration=duration)[
         0]  # , offset=args.offset, duration=args.duration)
+
     mel_spectrogram = librosa.feature.melspectrogram(
-        signal, n_fft=320, hop_length=80, n_mels=n_mels, fmax=8000)
+        signal, n_fft=800, hop_length=400, n_mels=n_mels, fmax=8000, win_length=800)
     log_mel_spectrogram = librosa.power_to_db(mel_spectrogram)
 
     # normalise log mel spectrogram -> think about which norm makes the most sense
-    norm_spec = librosa.util.normalize(log_mel_spectrogram, norm=1)
-
+    norm_spec = librosa.util.normalize(log_mel_spectrogram, norm=2)
+    norm_spec = torch.from_numpy(norm_spec)
+    print(norm_spec.shape)
     return norm_spec
 
 
@@ -39,5 +41,5 @@ def concatenate_features(d_vector, norm_spec):
     # concatenate d_vector as a row to the normalized log spec matrix
     input_matrix = numpy.vstack([norm_spec, d_vector])
 
-    return input_matrix
+    return input_matrix, input_matrix.shape
 

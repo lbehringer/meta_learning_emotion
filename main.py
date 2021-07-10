@@ -2,18 +2,28 @@ import argparse
 import numpy as np
 from input_features import audio_to_spectrogram, load_dvector, concatenate_features
 from model import CNN_BLSTM_SELF_ATTN
+from dataset import EmotionDataset, create_train_test
+import torch
+from torch.utils.data.dataset import random_split
 
 
 def main(args):
-    # TBD (dataloading & conversion, model training, evaluation)
+    # load data, split into train & test
+    dataset = EmotionDataset(
+        '/mount/arbeitsdaten/studenten1/advanced_ml/dengelva/meta_learning_emotion/data/pavoque/ang_wav.csv')
+    train_dataloader, test_dataloader = create_train_test(dataset)
+    for item in train_dataloader:
+        print(item)
+
     model = CNN_BLSTM_SELF_ATTN(args.input_spec_size, args.cnn_filter_size, args.num_layers_lstm,
                                 args.num_heads_self_attn, args.hidden_size_lstm, args.num_emo_classes, args.num_gender_class, args.embedding_size, args.n_mels)
+
+    # TBD (training, evaluation)
+
     # test
-    features = audio_to_spectrogram(
-        '/mount/arbeitsdaten/studenten1/advanced_ml/dengelva/meta_learning_emotion/Emotional_Speech_Dataset_Singapore/0001/Angry/0001_000657.wav', args.offset, args.duration, args.n_mels)
-    preds_emo, preds_gender = model(features.unsqueeze(1))
-    print(preds_emo)
-    print(preds_gender)
+    # features = audio_to_spectrogram(
+    #    '/mount/arbeitsdaten/studenten1/advanced_ml/dengelva/meta_learning_emotion/Emotional_Speech_Dataset_Singapore/0001/Angry/0001_000657.wav', args.offset, args.duration, args.n_mels)
+    #preds_emo, preds_gender = model(features.unsqueeze(1))
 
 
 if __name__ == "__main__":

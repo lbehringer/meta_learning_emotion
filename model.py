@@ -24,14 +24,13 @@ class CNN_BLSTM_SELF_ATTN(torch.nn.Module):
         self.embedding_size = embedding_size
         self.n_mels = n_mels
 
-        self.cnn_layer1 = nn.Sequential(nn.Conv1d(
-            self.input_spec_size, self.cnn_filter_size, kernel_size=3, stride=1), nn.MaxPool1d(3), nn.ReLU(inplace=True))
-        self.cnn_layer2 = nn.Sequential(nn.Conv1d(
-            self.cnn_filter_size, self.cnn_filter_size, kernel_size=3, stride=1),  nn.MaxPool1d(3), nn.ReLU(inplace=True))
+        self.cnn_layer1 = nn.Sequential(nn.Conv2d(
+            self.input_spec_size, self.cnn_filter_size, kernel_size=3, stride=1), nn.MaxPool2d(3), nn.ReLU(inplace=True))
+        self.cnn_layer2 = nn.Sequential(nn.Conv2d(
+            self.cnn_filter_size, self.cnn_filter_size, kernel_size=3, stride=1),  nn.MaxPool2d(3), nn.ReLU(inplace=True))
 
         ###
         self.embedding = nn.Linear(self.n_mels, 1)
-        self.soft = nn.Softmax()
         self.lstm = nn.LSTM(input_size=self.cnn_filter_size, hidden_size=self.hidden_size_lstm,
                             num_layers=self.num_layers_lstm, bidirectional=True, dropout=0.5, batch_first=True)
         # Transformer
@@ -42,36 +41,36 @@ class CNN_BLSTM_SELF_ATTN(torch.nn.Module):
         self.emotion_layer = nn.Sequential(nn.Linear(
             self.hidden_size_lstm*4, self.embedding_size), nn.ReLU(inplace=True))
 
-    def forward(self, inputs):
+    def forward(self, inputs):  # input shape = (batch_size, channels, spec_rows, spec_columns)
         out = self.cnn_layer1(inputs)
         out = self.cnn_layer2(out)
-        #h_0 = Variable(torch.randn(self.num_layers_lstm,inputs.shape[0],self.hidden_size_lstm ))
-        #c_0 = Variable(torch.randn(self.num_layers_lstm,inputs.shape[0],self.hidden_size_lstm ))
-
-        out = out.permute(0, 2, 1)
+        print(f'shape cnn output: {out.shape}')
+        print(f'cnn output: {out}')
+        # output CNN -> LSTM: dimensions do not match!
+        #out = out.permute(0, 2, 1)
         out, (final_hidden_state, final_cell_state) = self.lstm(out)
         out = self.encoder_layer(out)
         mean = torch.mean(out, 1)
         std = torch.std(out, 1)
         stat = torch.cat((mean, std), 1)
         pred_gender = self.gender_layer(stat)
-        pred_emo = self.emotion_layer(stat)
-        pred_emo = pred_emo.permute(1, 0)
-        pred_emo = self.embedding(pred_emo)
-        return pred_emo, pred_gender
+        embedding_emo = self.emotion_layer(stat)
+        embedding_emo = embedding_emo.permute(1, 0)
+        embedding_emo = self.embedding(embedding_emo)
 
-    '''
-    def forward_once(self, x):
-        # Forward pass 
-        output = self.cnn1(x)
-        output = output.view(output.size()[0], -1)
-        output = self.fc1(output)
-        return output
+        return embedding_emo
 
-    def forward(self, input1, input2):
-        # forward pass of input 1
-        output1 = self.forward_once(input1)
-        # forward pass of input 2
-        output2 = self.forward_once(input2)
-        return output1, output2
-    '''
+'''
+class SiameseNet(nn.Module):
+    def __init__(self, CNN_BLSTM_SELF_ATTN):
+        super(SiameseNet, self).__init__()
+        self.embedding = CNN_BLSTM_SELF_ATTN
+
+    def forward(self, x1, x2):
+        embedding1 = self.embedding(x1)
+        embedding2 = self.embedding(x2)
+        return embedding1, embedding2
+
+    def get_embedding(self, x):
+        return self.embedding_net(x)
+'''

@@ -7,14 +7,17 @@ from torch.utils.data.dataset import random_split
 
 class EmotionDataset(Dataset):
     def __init__(self, file_name):
-        file = pd.read_csv(file_name)
-        spectrogram = file.iloc[0:, 0]
-        emotion_label = file.iloc[0:, 1]
-        gender_label = file.iloc[0:, 2]
+        df = pd.read_json(file_name)
+        df = df.T
 
-        self.spectrogram = spectrogram
-        self.emotion_label = emotion_label
-        self.gender_label = gender_label
+        # name columns
+        df.columns = ['features', 'emotion_label', 'gender_label']
+        # convert all features from list to np.array
+        df["features"] = df["features"].apply(lambda x: np.array(x))
+
+        self.spectrogram = df["features"]
+        self.emotion_label = df["emotion_label"]
+        self.gender_label = df["gender_label"]
 
     def __len__(self):
         return len(self.emotion_label)  # access with len(name_of_dataset)
@@ -38,8 +41,10 @@ def create_train_test(dataset):
                                                    batch_size=32,
                                                    shuffle=True)
 
-    test_dataloader = train_dataloader = torch.utils.data.DataLoader(test,
-                                                                     batch_size=64,
-                                                                     shuffle=False)
+    test_dataloader =  torch.utils.data.DataLoader(test,batch_size=32,shuffle=False)
 
     return train_dataloader, test_dataloader
+
+
+##dataset = EmotionDataset('data/pavoque/sad.json')
+#print(dataset[0])

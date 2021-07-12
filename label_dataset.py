@@ -31,7 +31,7 @@ def create_json(spectrograms, emotion):
     data = {}
     # for each utt, append dict with "features": <features>, "target": <target>
     for i in range(len(spectrograms)):
-        data[emotion + '_' + str(i)] = {"features": spectrograms[i].tolist(), "target": emotion}
+        data[emotion + '_' + str(i)] = {"features": spectrograms[i].tolist(), "target": emotion, "gender": "m"}
 
     out_file = 'data/pavoque/' + emotion + '.json'
     with open(out_file, 'w') as out:
@@ -86,7 +86,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    emotion = 'ang'
+    emotion = 'sad'
     spectrograms, deleted_files = get_spectrograms(emotion)
     #write_emo_csv('data/pavoque/' + emotion + '.csv', 'data/pavoque/' + emotion + '/', spectrograms, emotion,
     # deleted_files)

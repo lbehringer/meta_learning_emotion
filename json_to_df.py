@@ -6,7 +6,7 @@ df = pd.read_json('data/pavoque/sad.json')
 df = df.T
 
 # name columns
-df.columns = ['features', 'label']
+df.columns = ['features', 'emotion', 'gender']
 # print(type(df["features"][1]))  # features are of list type
 
 # convert all features from list to np.array
@@ -14,7 +14,7 @@ df["features"] = df["features"].apply(lambda x: np.array(x))
 
 print(df["features"].head(5))
 # print(type(df["features"][1]))
-print(df["label"].head(5))
+print(df["emotion"].head(5))
 # print(type(df["label"][1]))
 
 # print(df["features"])

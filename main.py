@@ -5,25 +5,23 @@ from model import CNN_BLSTM_SELF_ATTN
 from dataset import EmotionDataset, create_train_test
 import torch
 from torch.utils.data.dataset import random_split
+from training import train
 
 
 def main(args):
-    # load data, split into train & test
-    dataset = EmotionDataset(
-        '/mount/arbeitsdaten/studenten1/advanced_ml/dengelva/meta_learning_emotion/data/pavoque/ang_wav.csv')
+    # load dataset, split into train & test
+    dataset = EmotionDataset('data/pavoque/sad.json')
     train_dataloader, test_dataloader = create_train_test(dataset)
-    for item in train_dataloader:
-        print(item)
+
 
     model = CNN_BLSTM_SELF_ATTN(args.input_spec_size, args.cnn_filter_size, args.num_layers_lstm,
                                 args.num_heads_self_attn, args.hidden_size_lstm, args.num_emo_classes, args.num_gender_class, args.embedding_size, args.n_mels)
+    model.cuda()
 
-    # TBD (training, evaluation)
+    # train model 
+    train(model, args.num_epochs, train_dataloader)
 
-    # test
-    # features = audio_to_spectrogram(
-    #    '/mount/arbeitsdaten/studenten1/advanced_ml/dengelva/meta_learning_emotion/Emotional_Speech_Dataset_Singapore/0001/Angry/0001_000657.wav', args.offset, args.duration, args.n_mels)
-    #preds_emo, preds_gender = model(features.unsqueeze(1))
+    # TBD (evaluation)
 
 
 if __name__ == "__main__":
@@ -50,6 +48,8 @@ if __name__ == "__main__":
                         required=False, type=int, help="gender classes --> m & f")
     parser.add_argument("--embedding_size", default=50,
                         required=False, type=int, help="embedding size for emotion embeddings")
+    parser.add_argument("--num_epochs", default=1,
+                        required=False, type=int, help="num_epochs")
 
     args = parser.parse_args()
 

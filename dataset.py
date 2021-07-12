@@ -10,16 +10,18 @@ class EmotionDataset(Dataset):
         file = pd.read_csv(file_name)
         spectrogram = file.iloc[0:, 0]
         emotion_label = file.iloc[0:, 1]
+        gender_label = file.iloc[0:, 2]
 
         self.spectrogram = spectrogram
         self.emotion_label = emotion_label
+        self.gender_label = gender_label
 
     def __len__(self):
         return len(self.emotion_label)  # access with len(name_of_dataset)
 
     def __getitem__(self, idx):
         # access with name_of_dataset[idx]
-        return self.spectrogram[idx], self.emotion_label[idx]
+        return self.spectrogram[idx], self.emotion_label[idx], self.gender_label[idx]
 
 
 def create_train_test(dataset):

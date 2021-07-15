@@ -11,15 +11,16 @@ from training import train
 def main(args):
     # load dataset, split into train & test
     dataset = EmotionDataset('data/pavoque/sad.json')
-    train_dataloader, test_dataloader = create_train_test(dataset)
 
+    train1, train2 = create_train_test(dataset)
+   
 
     model = CNN_BLSTM_SELF_ATTN(args.input_spec_size, args.cnn_filter_size, args.num_layers_lstm,
                                 args.num_heads_self_attn, args.hidden_size_lstm, args.num_emo_classes, args.num_gender_class, args.embedding_size, args.n_mels)
-    model.cuda()
+    # model.cuda()
 
-    # train model 
-    train(model, args.num_epochs, train_dataloader)
+    # train model
+    train(model, args.num_epochs, train1, train2)
 
     # TBD (evaluation)
 
@@ -48,7 +49,7 @@ if __name__ == "__main__":
                         required=False, type=int, help="gender classes --> m & f")
     parser.add_argument("--embedding_size", default=50,
                         required=False, type=int, help="embedding size for emotion embeddings")
-    parser.add_argument("--num_epochs", default=1,
+    parser.add_argument("--num_epochs", default=4,
                         required=False, type=int, help="num_epochs")
 
     args = parser.parse_args()

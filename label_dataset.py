@@ -1,6 +1,5 @@
 import numpy
-import numpy as np
-import pandas as pd
+import jsonmerge
 import os
 import csv
 import json
@@ -31,25 +30,37 @@ def create_json(spectrograms, emotion):
     data = {}
     # for each utt, append dict with "features": <features>, "target": <target>
     for i in range(len(spectrograms)):
-        data[emotion + '_' + str(i)] = {"features": spectrograms[i].tolist(), "target": emotion, "gender": "m"}
+        if i == 500:
+            break
+        else:
+            data[emotion + '_' + str(i)] = {"features": spectrograms[i].tolist(), "target": emotion, "gender": "m"}
 
-    out_file = 'data/pavoque/' + emotion + '.json'
+    out_file = 'data/pavoque/7_digit/' + emotion + '_500.json'
     with open(out_file, 'w') as out:
         json.dump(data, out)
 
+
+def merge_json():
+    with open("data/pavoque/7_digit/pok_500.json", 'r') as f:
+        emo = json.load(f)
+    with open("data/pavoque/7_digit/pavoque_across_500.json", 'r') as f:
+        merged = json.load(f)
+        merged = jsonmerge.merge(emo, merged)
+    with open("data/pavoque/7_digit/pavoque_all_500.json", 'w+') as f:
+        json.dump(merged, f)
 
 
 def get_spectrograms(emotion):
     spectrograms = []
     deleted_files = 0
-    for file in os.listdir('data/pavoque/' + emotion):
+    for file in os.listdir('data/pavoque/7_digit/' + emotion):
         try:
             spectrograms.append(audio_to_spectrogram(
-                    'data/pavoque/' + emotion + '/' + file,
+                    'data/pavoque/7_digit/' + emotion + '/' + file,
                     args.offset, args.duration, args.n_mels).numpy())
         except ValueError as e:
             deleted_files += 1
-            with open("data/pavoque/logs/log_" + emotion + ".log", "w") as f:
+            with open("data/pavoque/logs/log_" + emotion + ".log", "a") as f:
                 f.writelines(file + ": " + str(e))
     return spectrograms, deleted_files
 
@@ -86,19 +97,13 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    emotion = 'sad'
-    spectrograms, deleted_files = get_spectrograms(emotion)
+    emotion = 'pok'
+    #spectrograms, deleted_files = get_spectrograms(emotion)
     #write_emo_csv('data/pavoque/' + emotion + '.csv', 'data/pavoque/' + emotion + '/', spectrograms, emotion,
     # deleted_files)
-    create_json(spectrograms, emotion)
+    #create_json(spectrograms, emotion)
+    merge_json()
 
 
     #print(spectrograms[0:5])
 
-    #
-    # with open('data/pavoque/ang.csv', 'w', newline='', encoding='utf-8') as f:
-    #     writer = csv.writer(f)
-    #     writer.writerow(['utterance'] + ['emotion'])
-    #     #num_files = len(os.listdir('data/pavoque/ang'))
-    #     #for i in range(num_files):
-    #     writer.writerow([spectrograms] + ['ang'])

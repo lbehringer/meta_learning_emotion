@@ -29,7 +29,7 @@ class EmotionDataset(Dataset):
 
 def create_train_test(dataset):
     # train/test ratio
-    split_train = int(len(dataset) * 1/2)
+    split_train = int(len(dataset) * 9/10)
     split_test = len(dataset) - split_train
 
     # split dataset in train and test
@@ -37,16 +37,22 @@ def create_train_test(dataset):
                                split_train, split_test])
 
     # load train and test data to batches and shuffle
-    train_dataloader = torch.utils.data.DataLoader(train,
+    query_dataloader = torch.utils.data.DataLoader(test,
+                                                   batch_size=1,
+                                                   shuffle=False)
+    
+    train_dataloader1 = torch.utils.data.DataLoader(train,
                                                    batch_size=1,
                                                    shuffle=True)
+    train_dataloader2 = torch.utils.data.DataLoader(train,
+                                                   batch_size=1,
+                                                   shuffle=True)
+   
 
-    test_dataloader = torch.utils.data.DataLoader(
-        test, batch_size=1, shuffle=False)
-
-    return train_dataloader, test_dataloader
+    return query_dataloader, train_dataloader1, train_dataloader2
 
 
-#dataset = EmotionDataset('data/pavoque/sad.json')
 
-# print(dataset[0])
+#dataset = EmotionDataset('data/pavoque/pavoque_across_500.json')
+#print(dataset[0])
+#print(create_train_test(dataset))

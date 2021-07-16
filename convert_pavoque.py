@@ -22,18 +22,18 @@ def get_pavoque_transcript(yaml):
             if re.search("^\s*start", line):
                 start = line.lstrip("  start: ")
                 start = int(float(start)*100)
-                start = str(start).zfill(7)
+                start = str(start).zfill(6)
             if re.search("^\s*end", line):
                 end = line.lstrip("  end: ")
                 end = int(float(end)*100)
-                end = str(end).zfill(7)
+                end = str(end).zfill(6)
                 if start != "" and end != "" and text != "":
                     transcript_line = start + "_" + end + "\t" + text
                     # print(transcript_line)
-                    with open(os.path.join("data", "pavoque", "transcripts", "7_digit", transcript_filename), 'a', encoding='utf-8') as out_file:
+                    with open(os.path.join("data", "pavoque", "transcripts", transcript_filename), 'a', encoding='utf-8') as out_file:
                         out_file.write(transcript_line)
                 start, end, text = str(), str(), str()
-        return os.path.join(yaml_head_tail[0], "transcripts", "7_digit", transcript_filename)
+        return os.path.join(yaml_head_tail[0], "transcripts",transcript_filename)
 
 
 """takes as input a transcript file and the audio file; 
@@ -44,8 +44,8 @@ def segment_pavoque_audio(transcript, in_file):
 
     with open(transcript, 'r', encoding='utf-8') as f:
         for line in f:
-            start = int(re.findall("\d{7}", line)[0])
-            stop = int(re.findall("\d{7}", line)[1])
+            start = int(re.findall("\d{6}", line)[0])
+            stop = int(re.findall("\d{6}", line)[1])
             create_segment(data, samplerate, start, stop)
 
 
@@ -57,6 +57,6 @@ def create_segment(data, samplerate, start, stop):
     startframe = int(start/100*samplerate)
     stopframe = int(stop/100*samplerate)
     data = data[startframe:stopframe]
-    out_file = str(start).zfill(7) + "_" + str(stop).zfill(7) + ".wav"
-    out_path = os.path.join("data", "pavoque", "7_digit", out_file)
+    out_file = str(start).zfill(6) + "_" + str(stop).zfill(6) + ".wav"
+    out_path = os.path.join("data", "pavoque", out_file)
     sf.write(out_path, data, samplerate)

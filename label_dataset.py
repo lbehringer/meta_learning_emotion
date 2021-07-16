@@ -30,20 +30,23 @@ def create_json(spectrograms, emotion):
     data = {}
     # for each utt, append dict with "features": <features>, "target": <target>
     for i in range(len(spectrograms)):
-        data[emotion + '_' + str(i)] = {"features": spectrograms[i].tolist(), "target": emotion, "gender": "m"}
+        if i == 500:
+            break
+        else:
+            data[emotion + '_' + str(i)] = {"features": spectrograms[i].tolist(), "target": emotion, "gender": "m"}
 
-    out_file = 'data/pavoque/7_digit/' + emotion + '.json'
+    out_file = 'data/pavoque/7_digit/' + emotion + '_500.json'
     with open(out_file, 'w') as out:
         json.dump(data, out)
 
 
 def merge_json():
-    with open("data/pavoque/7_digit/pok.json", 'r') as f:
+    with open("data/pavoque/7_digit/pok_500.json", 'r') as f:
         emo = json.load(f)
-    with open("data/pavoque/7_digit/pavoque_all.json", 'r') as f:
+    with open("data/pavoque/7_digit/pavoque_across_500.json", 'r') as f:
         merged = json.load(f)
         merged = jsonmerge.merge(emo, merged)
-    with open("data/pavoque/7_digit/pavoque_all.json", 'w+') as f:
+    with open("data/pavoque/7_digit/pavoque_all_500.json", 'w+') as f:
         json.dump(merged, f)
 
 
@@ -94,12 +97,12 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    emotion = 'ang'
+    emotion = 'pok'
     #spectrograms, deleted_files = get_spectrograms(emotion)
     #write_emo_csv('data/pavoque/' + emotion + '.csv', 'data/pavoque/' + emotion + '/', spectrograms, emotion,
     # deleted_files)
     #create_json(spectrograms, emotion)
-    #merge_json()
+    merge_json()
 
 
     #print(spectrograms[0:5])

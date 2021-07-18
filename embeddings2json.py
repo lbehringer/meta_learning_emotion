@@ -8,20 +8,18 @@ def get_embeddings(model, model_path, dataset):
     emb_dict = dict()
     for sample in dataset:
         spec_features = sample[0]
+
         label = str(sample[1])
         embedding = model.forward_once(spec_features)
         embedding = embedding.tolist()
-        print(type(embedding))
-        print(type(label))
-        if label not in emb_dict:
-            emb_dict[label] = [embedding]
+        # print(embedding)
+        if label not in emb_dict.keys():
+            emb_dict[label] = dict()
+            emb_dict[label]['embeddings'] = [embedding]
         else: 
-            emb_dict[label] += [embedding]
+            emb_dict[label]['embeddings'] += [embedding]
 
-
-    #aDict = {"a":54, "b":87}
     jsonString = json.dumps(emb_dict)
-    jsonFile = open("emotion_embeddings.json", "w")
+    jsonFile = open("emotion_embeddings_7_5.json", "w")
     jsonFile.write(jsonString)
     jsonFile.close()
-    

@@ -8,8 +8,8 @@ class ContrastiveLoss(torch.nn.Module):
     """
     Contrastive loss function.
     Based on: http://yann.lecun.com/exdb/publis/pdf/hadsell-chopra-lecun-06.pdf
-    label = 0 if dissimilar
-    label = 1 if similar 
+    label = 1 if dissimilar
+    label = 0 if similar 
     """
 
     def __init__(self, margin=2.0):
@@ -19,7 +19,7 @@ class ContrastiveLoss(torch.nn.Module):
     def forward(self, output1, output2, label):
         euclidean_distance = F.pairwise_distance(output1, output2)
 
-        loss_contrastive =  label * torch.pow(euclidean_distance, 2) +  (1-label) * torch.pow(torch.clamp(self.margin - euclidean_distance, min=0.0), 2)
+        loss_contrastive =  (1-label) * 1/2 * torch.pow(euclidean_distance, 2) + label * 1/2 * torch.pow(torch.clamp(self.margin - euclidean_distance, min=0.0), 2) 
 
         return loss_contrastive
 

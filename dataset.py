@@ -11,20 +11,20 @@ class EmotionDataset(Dataset):
         df = df.T
 
         # name columns
-        df.columns = ['features', 'emotion_label', 'gender_label']
+        df.columns = ['features', 'emotion_label']
         # convert all features from list to np.array
         df["features"] = df["features"].apply(lambda x: np.array(x))
 
         self.spectrogram = df["features"]
         self.emotion_label = df["emotion_label"]
-        self.gender_label = df["gender_label"]
+        #self.gender_label = df["gender_label"]
 
     def __len__(self):
         return len(self.emotion_label)  # access with len(name_of_dataset)
 
     def __getitem__(self, idx):
         # access with name_of_dataset[idx]
-        return self.spectrogram[idx], self.emotion_label[idx], self.gender_label[idx]
+        return self.spectrogram[idx], self.emotion_label[idx]
 
 
 def create_train_test(dataset):

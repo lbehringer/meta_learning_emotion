@@ -1,7 +1,7 @@
 import argparse
 import numpy as np
 from input_features import audio_to_spectrogram, load_dvector, concatenate_features
-from model import CNN_BLSTM_SELF_ATTN, Siamese
+from model import CNN_BLSTM_SELF_ATTN
 from dataset import EmotionDataset, create_train_test
 import torch
 from torch.utils.data.dataset import random_split
@@ -11,7 +11,7 @@ from embeddings2json import get_embeddings
 
 def main(args):
     # load dataset, split into train & test
-    dataset = EmotionDataset('data/pavoque/pavoque_across_500_dur_7_5.json')
+    dataset = EmotionDataset('data/pavoque/pavoque_all_500_dur_7_5_norm_0to1.json')
     support_data = EmotionDataset('data/pavoque/support_0.json')
 
     query_set, train1, train2 = create_train_test(dataset)
@@ -30,14 +30,15 @@ def main(args):
         train(model, args.num_epochs, train1, train2)
 
     if args.evaluate:
-        evaluate(model, support_set, query_set, "state_dict_model_7_5.pt")
+        evaluate(model, support_set, query_set, "state_dict_model_margin.pt")
 
     # get embeddings
     if args.embeddings2file:
-        get_embeddings(model, "state_dict_model_7_5.pt", query_set)
+        get_embeddings(model, "state_dict_model_margin.pt", query_set)
 
 
-    # TBD visualization (t-sne, PCA)
+    # visualization (t-sne, PCA)
+    #tsne.py
 
 
 if __name__ == "__main__":
@@ -66,11 +67,11 @@ if __name__ == "__main__":
                         required=False, type=int, help="embedding size for emotion embeddings")
     parser.add_argument("--num_epochs", default=120,
                         required=False, type=int, help="num_epochs")
-    parser.add_argument("--embeddings2file", default=False,
+    parser.add_argument("--embeddings2file", default=True,
                         required=False, type=bool, help="write embeddings to file?")
     parser.add_argument("--train", default=False,
                         required=False, type=bool, help="train model?")
-    parser.add_argument("--evaluate", default=True,
+    parser.add_argument("--evaluate", default=False,
                         required=False, type=bool, help="evaluate model?")
 
     args = parser.parse_args()

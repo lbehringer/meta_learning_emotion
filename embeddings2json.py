@@ -1,5 +1,6 @@
-import json 
+import json
 import torch
+
 
 def get_embeddings(model, model_path, dataset):
     model.load_state_dict(torch.load(model_path))
@@ -16,7 +17,7 @@ def get_embeddings(model, model_path, dataset):
         if label not in emb_dict.keys():
             emb_dict[label] = dict()
             emb_dict[label]['embeddings'] = [embedding]
-        else: 
+        else:
             emb_dict[label]['embeddings'] += [embedding]
 
     jsonString = json.dumps(emb_dict)

@@ -17,10 +17,11 @@ def get_embeddings(model, model_path, dataset):
         if label not in emb_dict.keys():
             emb_dict[label] = dict()
             emb_dict[label]['embeddings'] = [embedding]
+            emb_dict[label]['label'] = label
         else:
             emb_dict[label]['embeddings'] += [embedding]
 
     jsonString = json.dumps(emb_dict)
-    jsonFile = open("emotion_embeddings_7_5.json", "w")
+    jsonFile = open("emotion_embeddings_newfeat2.json", "w")
     jsonFile.write(jsonString)
     jsonFile.close()

@@ -1,0 +1,8 @@
+advanced-ml/pavoque_*.json
+data
+*embeddings*.json
+*.pyc
+*.swp
+Emotional_Speech_Dataset_Singapore
+Pavoque_Emotional_German
+iemocap

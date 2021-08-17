@@ -71,3 +71,52 @@ class CNN_BLSTM_SELF_ATTN(torch.nn.Module):
 
 
 
+class Siamese(nn.Module):
+
+    def __init__(self):
+        super(Siamese, self).__init__()
+        self.conv = nn.Sequential(
+            nn.Conv1d(1, 64, 10),  # 64@96*96
+            nn.ReLU(inplace=True),
+            nn.MaxPool1d(2),  # 64@48*48
+            nn.Conv1d(64, 128, 7),
+            nn.ReLU(),    # 128@42*42
+            nn.MaxPool1d(2),   # 128@21*21
+            nn.Conv1d(128, 128, 4),
+            nn.ReLU(), # 128@18*18
+            nn.MaxPool1d(2), # 128@9*9
+            nn.Conv1d(128, 256, 4),
+            nn.ReLU(),   # 256@6*6
+        )
+        self.liner = nn.Sequential(nn.Linear(9216, 4096), nn.Sigmoid())
+        self.out = nn.Linear(3328, 1)
+
+    def forward_once(self, x):
+        x = x.permute(1,0,2)
+        #print(x.shape)
+        x = self.conv(x)
+        #print(x.shape)
+        x = x.view(x.size()[0], -1)
+        #print(x.shape)
+        #print(x)
+        #x = self.liner(x)
+        x = self.out(x)
+        return x
+
+    def forward(self, x1, x2):
+        out1 = self.forward_once(x1)
+        out2 = self.forward_once(x2)
+        out1 = torch.flatten(out1)
+        out2 = torch.flatten(out2)
+        #dis = torch.abs(out1 - out2)
+        #out = self.out(dis)
+        #  return self.sigmoid(out)
+        return out1, out2
+
+'''
+# for test
+if __name__ == '__main__':
+    net = Siamese()
+    print(net)
+    print(list(net.parameters()))
+'''

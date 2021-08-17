@@ -38,11 +38,6 @@ def create_train_test(dataset):
     train, test = random_split(dataset=dataset, lengths=[
                                split_train, split_test])
     
-    split1 = int(len(train) * 1/2)
-    split2 = len(train) - split1
-    
-    train1, train2 = random_split(dataset=train, lengths=[
-                               split1, split2])
 
     # load train and test data to batches and shuffle
     query_dataloader = torch.utils.data.DataLoader(test,

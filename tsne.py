@@ -13,21 +13,19 @@ import matplotlib.pyplot as plt
 import matplotlib.patheffects as pe
 
 import seaborn as sns
-# dict_test = dict()
-# dict_test['sad'] = dict()
-# dict_test['sad']['embeddings'] = [['12345']]
-# dict_test['sad']['embeddings'] += [['23456']]
-# print(dict_test)
 
-df = pd.read_json('emotion_embeddings_2.json')
+#with pd.option_context('display.float_format', '{:0.20f}'.format):
+df = pd.read_json('emotion_embeddings_newfeat.json')
 df = df.T
+print(df.columns.values)
 # convert all features from list to np.array
 #df["features"] = df["features"].apply(lambda x: np.array(x))
-#print(df['features'][0][0])
+#print(df.head())
+#print(df['embeddings'][0])
 #print(type(df['features']))
 #features = df['features'].tolist()
 #print(features)
-X = df['features']  # contains embeddings for all emotions
+X = df['embeddings']  # contains embeddings for all emotions
 
 
 #X_embs = X[0]  # contains embeddings for first emotion
@@ -43,7 +41,7 @@ print(y)
 #print(X[1][0].shape)
 
 X_embs = X[0]
-
+print(X_embs[0])
 num_labels = len(X)
 num_embs = len(X_embs)  # get number of embeddings in X_embs
 # print('num_embs = ' + str(num_embs))
@@ -91,12 +89,8 @@ for i in range(num_labels):
 df_features.rename(columns=col_dict, inplace=True)  # rename columns
 df_features.rename(columns={150: "label"}, inplace=True)
 feat_cols = ['feat'+str(i) for i in range(num_cols)]
-print(df_features.shape)
-print(df_features.head())
-print(df_features.tail())
-#df_features['label'] = y
 
-
+#print(df_features.head())
 #print(df_features.shape[0])
 #print(df_features.shape)  # this should return a df with <num_embs> rows and <num_cols> columns
 
@@ -119,7 +113,7 @@ data_subset['label'] = df_features['label'].values
 
 
 # TSNE
-tsne = TSNE(n_components=2, verbose=1, perplexity=40, n_iter=300)
+tsne = TSNE(n_components=2, verbose=1, perplexity=40, n_iter=500)
 tsne_results = tsne.fit_transform(data_subset[feat_cols])  # this should be df_features[feat_cols].values
 #print(tsne_results)
 #print(data_subset.shape)

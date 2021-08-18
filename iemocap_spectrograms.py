@@ -28,19 +28,21 @@ def create_iemocap_label_spectrograms_json():
     for label in label_list:
         with open(os.path.join('IEMOCAP_labels/', label), 'r') as f:
             lines = f.readlines()
-        file_list = list()
+        file_list = list()  # this contains all utt id's, e.g. "Ses01F_impro01_F012\n" (WITHOUT ".wav" at the end)
         for line in lines:
-            line = line.rstrip('\n') + '.wav'
-            file_list.append(utt2path[line])
+            line = line.rstrip('\n') + '.wav'  # remove \n, add file format
+            file_list.append(utt2path[line])  # for each utt id, add respective filepath to file_list
         print(file_list)
         for filepath in file_list:
-            file = path2utt[filepath]
+            file = path2utt[filepath]  # get file (utt id + ".wav")
+            gender = file[-8].lower()  # get "m" or "f" from utt id, e.g. get "f" from "Ses01F_impro01_F012.wav"
             try:
                 single_spectrogram = dict()
                 single_spectrogram['features'] = audio_to_spectrogram(
                     filepath,
                     args.offset, args.duration, args.n_mels).numpy().tolist()
                 single_spectrogram['target'] = label
+                single_spectrogram['gender'] = gender
                 spectrograms[file] = single_spectrogram
 
                 i += 1

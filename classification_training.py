@@ -9,27 +9,26 @@ from model import CNN_BLSTM_SELF_ATTN
 from sklearn.metrics import f1_score
 import torch.nn.functional as F
 from scipy.spatial import distance
-from dataset import EmotionDataset, create_train_test
+from dataset import EmotionDataset, create_classification_set, create_train_test
 from classification_model import EmotionClassificationNet
+import matplotlib.pyplot as plt
 
 
-
-
-def train(model, num_epochs, dataloader_train):
-    #model.load_state_dict(torch.load('state_dict_model_CUDA.pt')) # continue training with model 
+def classification_training(model, num_epochs, dataloader_train):
+    # model.load_state_dict(torch.load('state_dict_model_classification_iemocap.pt')) # continue training with model
     model.train()
-    labels_emo_map = {'sad': 0, 'ang': 1, 'pok': 2, 'hap': 3, 'neu': 4}
-    #if torch.cuda.is_available():
-    #    device = torch.device("cuda")
-    #    print('CUDA available')
-    #else:
-    device = 'cpu'
-    print('CUDA not available - CPU is used')
-
+    labels_emo_map = {'sad': 0, 'ang': 1, 'hap': 2, 'neu': 3, 'pok': 4}
+    if torch.cuda.is_available():
+        device = torch.device("cuda")
+        print('CUDA available')
+        model.cuda()
+    else:
+        device = 'cpu'
+        print('CUDA not available - CPU is used')
     optimizer = optim.Adam(model.parameters(), lr=0.001,
-                           weight_decay=1e-05, betas=(0.9, 0.98), eps=1e-9)
+                           weight_decay=0.00001, betas=(0.9, 0.98), eps=1e-9)
     criterion = nn.CrossEntropyLoss()
-   
+
     scheduler = ReduceLROnPlateau(
         optimizer, mode='min', patience=3, factor=0.1, verbose=True)
 
@@ -37,39 +36,31 @@ def train(model, num_epochs, dataloader_train):
     for epoch in range(num_epochs):
         for i, sample in enumerate(dataloader_train):
             # categorical to numeric labels
-            label_emo = torch.FloatTensor(
-                [float(labels_emo_map[label]) for label in sample[1]])
-            print(label_emo)
-           
+            label_emo = torch.Tensor(
+                [int(labels_emo_map[label]) for label in sample[1]])
+            # print(type(label_emo))
+            label_emo = label_emo.type(torch.LongTensor)
+            label_emo =  label_emo.to(device)
             spec_features = sample[0]
-           
-       
-            spec_features, label_emo= spec_features.to(
-                device, dtype=torch.float), label_emo.to(device)
-            
-            
+            spec_features = spec_features.to(device, dtype=torch.float)
+#            spec_features1, spec_features2, label_emo1, label_emo2 = spec_features1.to(
+#                device, dtype=torch.float), spec_features2.to(
+#                device, dtype=torch.float), label_emo1.to(device), label_emo2.to(device)
             spec_features.requires_grad = True
-          
+
             # clear the gradients
             optimizer.zero_grad()
 
             # model output
             prediction = model(spec_features)
-            print(f'prediction: {prediction}')
-            prediction = prediction.type(torch.LongTensor)
-    
-            #prediction = torch.argmax(prediction)
-            print(prediction)
-        
-            prediction = torch.unsqueeze(prediction, 0)
-            #label_emo = torch.unsqueeze(label_emo, 0)
-       
-   
-          
+
             # calculate loss
             loss = criterion(prediction, label_emo)
+            #print(f'loss: {loss}')
 
             loss.backward()
+            # for name, param in model.named_parameters():
+            #    print(name, param)
             # update model weights
             optimizer.step()
 
@@ -78,72 +69,61 @@ def train(model, num_epochs, dataloader_train):
             if i % 500 == 0:
                 print('Loss {} after {} iterations'.format(
                     np.mean(np.asarray(train_loss_list)), i))
-         
 
-        mean_loss = np.mean(np.asarray(train_loss_list))
+                mean_loss = np.mean(np.asarray(train_loss_list))
+                plt.plot(mean_loss)
+                plt.savefig('classification_loss.png')
+
         print('Loss {} after {} epochs'.format(
-                    np.mean(np.asarray(mean_loss)), epoch))
-        
-    
-        PATH = "state_dict_model_CUDA.pt"
+            np.mean(np.asarray(mean_loss)), epoch))
+
+        PATH = "state_dict_model_classification_iemocap_100ep_lr0_001.pt"
+
         torch.save(model.state_dict(), PATH)
 
-def evaluate(model, support, query, PATH):
-    labels_emo_map = {'sad': 0, 'ang': 1, 'pok': 2, 'hap': 3, 'neu': 4}
-    #labels_gen_map = {'m': 0, 'f': 1}
+
+def evaluate(model, test, PATH):
+    labels_emo_map = {'sad': 0, 'ang': 1, 'hap': 2, 'neu': 3, 'pok': 4}
+
     with torch.no_grad():
-            model.load_state_dict(torch.load(PATH))
-            model.double()
-            model.eval()
-            loss = ContrastiveLoss(2)
-            y_pred = list()
-            y_true = list()
-            for i, samp1 in enumerate(query):
-                #print(f'query: {samp1}')
-                label_emo1 = torch.FloatTensor([float(labels_emo_map[label]) for label in samp1[1]])
-                y_true.append(int(label_emo1.item()))
-                spec_query = samp1[0]
-        
-                losses = dict()
-                # compare sample in query set with every sample in emotion set and choose emotion with highest similarity 
-                for samp2 in support:
-                    label_emo2 = torch.FloatTensor([float(labels_emo_map[label]) for label in samp2[1]])
-                    
-                    if label_emo1 == label_emo2:
-                        label = 1
-                    else:
-                        label = 0
-                    spec_support = samp2[0]
-                    emb1, emb2 = model(spec_query, spec_support)
-                    #print(f'support: {samp2[1]}')
+        model.load_state_dict(torch.load(PATH))
+        model.double()
+        model.eval()
+        #loss = ContrastiveLoss(2)
+        y_pred = list()
+        y_true = list()
+        soft = torch.nn.Softmax(dim=None)
 
-                    #emb1 = torch.unsqueeze(emb1, 0)
-                    #emb2 = torch.unsqueeze(emb2, 0)
-            
-          
-                    similarity = abs(distance.euclidean(emb1, emb2))
-                   
-                    #_loss = loss(emb1, emb2, label)
-                    losses[int(label_emo2.item())] = similarity
-                    print(losses)
-              
-                #print(losses)
-                prediction = min(losses, key=losses.get)
-                y_pred.append(prediction)
-   
-            print(f'predictions: {y_pred}')
-            print(f'gold label: {y_true}')
-            score = f1_score(y_true, y_pred, average='macro')
-            print(f'f_score: {score}')
-          
+        for i, samp in enumerate(test):
+            #print(f'query: {samp1}')
+            label_emo = torch.FloatTensor(
+                [float(labels_emo_map[label]) for label in samp[1]])
+            y_true.append(label_emo.item())
+            #y_true.append(label_emo)
+            spec_test = samp[0]
 
-dataset = EmotionDataset('data/pavoque/pavoque_all_500_dur_7_5_norm_0to1.json')
-evaluation, train1, train2 = create_train_test(dataset)
-num_classes = 5
-model = EmotionClassificationNet(1,64,2,8,60,num_classes,2,26)
+            prediction = model(spec_test)
+            print(prediction)
+            prediction = torch.argmax(prediction)
+            # print(type(prediction))
+            print(prediction)
 
-print(train(model, 1, train1))
+            y_pred.append(prediction)
 
+        print(f'predictions: {y_pred}')
+        print(f'gold label: {y_true}')
+        score = f1_score(y_true, y_pred, average='macro')
+        print(f'f_score: {score}')
+
+
+dataset = EmotionDataset(
+    '/mount/arbeitsdaten/studenten1/team-lab-phonetics/2021/student_directories/Lyonel_Behringer/advanced-ml/iemocap_across_500_dur_4_spectrograms.json')
+train, test = create_classification_set(dataset)
+num_classes = 4
+model = EmotionClassificationNet(26, 1, 2, 10, 20, num_classes, 26)
+
+#print(classification_training(model, 100, train))
+print(evaluate(model, test, 'state_dict_model_classification_iemocap_100ep_lr0_001.pt'))
 
 #labels_gen_map = {'m': 0, 'f': 1}
 #labels_gen1 = torch.FloatTensor([float(labels_gen_map[label]) for label in sample1[2]])

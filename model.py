@@ -26,9 +26,9 @@ class CNN_BLSTM_SELF_ATTN(torch.nn.Module):
         self.n_mels = n_mels
 
         self.cnn_layer1 = nn.Sequential(nn.Conv1d(
-            self.input_spec_size, self.cnn_filter_size, kernel_size=3, stride=1), nn.MaxPool1d(3), nn.ReLU(inplace=True))
+            self.input_spec_size, self.cnn_filter_size, kernel_size=3, stride=1), nn.MaxPool1d(2), nn.ReLU(inplace=True))
         self.cnn_layer2 = nn.Sequential(nn.Conv1d(
-            self.cnn_filter_size, self.cnn_filter_size, kernel_size=3, stride=1),  nn.MaxPool1d(3), nn.ReLU(inplace=True))
+            self.cnn_filter_size, self.cnn_filter_size, kernel_size=3, stride=1),  nn.MaxPool1d(2), nn.ReLU(inplace=True))
 
         ###
         self.embedding = nn.Linear(self.n_mels, 1)
@@ -36,15 +36,16 @@ class CNN_BLSTM_SELF_ATTN(torch.nn.Module):
                             num_layers=self.num_layers_lstm, bidirectional=True, dropout=0.5, batch_first=True)
         # Transformer
         self.encoder_layer = nn.TransformerEncoderLayer(
-            d_model=self.hidden_size_lstm*2, dim_feedforward=512, nhead=self.num_heads_self_attn)
+            d_model=self.hidden_size_lstm*2, dim_feedforward=5, nhead=self.num_heads_self_attn)
         self.gender_layer = nn.Linear(
             self.hidden_size_lstm*4, self.num_gender_class)  # , nn.ReLU(inplace=True))#, #nn.Linear(self.n_mels, self.embedding_size))
         self.emotion_layer = nn.Sequential(nn.Linear(
             self.hidden_size_lstm*4, self.embedding_size), nn.ReLU(inplace=True))
 
     def forward_once(self, input):  # input shape = (batch_size, channels, spec_rows, spec_columns)
-        inputs = input.permute(1,0,2)
-        out = self.cnn_layer1(inputs)
+        #inputs = input.permute(1,0,2)
+        #out = self.cnn_layer1(inputs)
+        out = self.cnn_layer1(input) # comment this instead of one line above
         out = self.cnn_layer2(out)
         out = out.permute(0, 2, 1)
         out, (final_hidden_state, final_cell_state) = self.lstm(out)

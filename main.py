@@ -12,9 +12,9 @@ from embeddings2json import get_embeddings
 def main(args):
     # load dataset, split into train & test
     dataset = EmotionDataset(
-        'data/pavoque/pavoque_across_500_dur_4_preemph_norm_0to1.json')
+        '/mount/arbeitsdaten/studenten1/team-lab-phonetics/2021/student_directories/Lyonel_Behringer/advanced-ml/iemocap_across_500_dur_4_spectrograms.json')
     support_data = EmotionDataset(
-        'data/pavoque/pavoque_across_500_dur_4_preemph_support_norm_0to1.json')
+        '/mount/arbeitsdaten/studenten1/team-lab-phonetics/2021/student_directories/Lyonel_Behringer/advanced-ml/pavoque_across_500_dur_4_preemph_support_norm_0to1.json')
 
     query_set, train1, train2 = create_train_test(dataset)
     support_set = torch.utils.data.DataLoader(support_data, batch_size=1,
@@ -31,7 +31,7 @@ def main(args):
 
     # train & evaluate model
     if args.train:
-        train(model, args.num_epochs, train1, train2, query_set, support_set)
+        train(model, args.num_epochs, train1, train2, query_set, support_set, args.trained_model)
 
     if args.evaluate:
         evaluate(model, support_set, query_set, args.trained_model)
@@ -52,8 +52,8 @@ if __name__ == "__main__":
                         type=int, help="window size in seconds")
     parser.add_argument("--n_mels", default=26, required=False,
                         type=int, help="number of filterbanks")
-    parser.add_argument("--input_spec_size", default=1, required=False,  # in_channels ?
-                        type=int, help="number of convolution filters")
+    parser.add_argument("--input_spec_size", default=26, required=False,  # in_channels ?
+                        type=int, help="number of spectrogram features")
     parser.add_argument("--cnn_filter_size", default=64, required=False,
                         type=int, help="number of convolution filters")
     parser.add_argument("--num_layers_lstm", default=2,
@@ -74,9 +74,9 @@ if __name__ == "__main__":
                         required=False, type=bool, help="write embeddings to file?")
     parser.add_argument("--train", default=True,
                         required=False, type=bool, help="train model?")
-    parser.add_argument("--evaluate", default=True,
+    parser.add_argument("--evaluate", default=False,
                         required=False, type=bool, help="evaluate model?")
-    parser.add_argument("--trained_model", default="state_dict_model_siamese.pt",
+    parser.add_argument("--trained_model", default="state_dict_iemocap_lr0_0001.pt",
                         required=False, type=str, help="load trained model parameters")
 
     args = parser.parse_args()

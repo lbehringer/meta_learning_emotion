@@ -11,20 +11,21 @@ import torch.nn.functional as F
 from scipy.spatial import distance
 
 
-def train(model, num_epochs, dataloader_train1, dataloader_train2, support, query):
+def train(model, num_epochs, dataloader_train1, dataloader_train2, support, query, path):
     #model.load_state_dict(torch.load('state_dict_model_marg4.pt')) # continue training with model 
     model.train()
-    labels_emo_map = {'sad': 0, 'ang': 1, 'pok': 2, 'hap': 3, 'neu': 4}
+    labels_emo_map = {'sad': 0, 'ang': 1, 'hap': 2, 'neu': 3, 'pok': 4}
    
-    #if torch.cuda.is_available():
-    #    device = torch.device("cuda")
-    #    print('CUDA available')
-    #else:
-    device = 'cpu'
-    print('CUDA not available - CPU is used')
+    if torch.cuda.is_available():
+        device = torch.device("cuda")
+        print('CUDA available')
+        model.cuda()
+    else:
+        device = 'cpu'
+        print('CUDA not available - CPU is used')
 
     optimizer = optim.Adam(model.parameters(), lr=0.001,
-                           weight_decay=1e-05, betas=(0.9, 0.98), eps=1e-9)
+                           weight_decay=0.00001, betas=(0.9, 0.98), eps=1e-9)
     criterion = ContrastiveLoss(4)
     #criterion = ContrastiveLossCosine()
    
@@ -93,15 +94,14 @@ def train(model, num_epochs, dataloader_train1, dataloader_train2, support, quer
                     np.mean(np.asarray(mean_loss)), epoch))
         
     
-        PATH = "state_dict_model_20.pt"
-        torch.save(model.state_dict(), PATH)
-        #evaluate(model, support, query, PATH)
+        torch.save(model.state_dict(), path)
+        #evaluate(model, support, query, path)
 
 
 
 
 def evaluate(model, support, query, PATH):
-    labels_emo_map = {'sad': 0, 'ang': 1, 'pok': 2, 'hap': 3, 'neu': 4}
+    labels_emo_map = {'sad': 0, 'ang': 1, 'hap': 2, 'neu': 3, 'pok': 4}
 
     with torch.no_grad():
             model.load_state_dict(torch.load(PATH))

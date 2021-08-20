@@ -77,7 +77,7 @@ def classification_training(model, num_epochs, dataloader_train):
         print('Loss {} after {} epochs'.format(
             np.mean(np.asarray(mean_loss)), epoch))
 
-        PATH = "state_dict_model_classification_iemocap_100ep_lr0_001.pt"
+        PATH = "state_dict_model_classification_iemocap_100ep_20_08_21_11_28am.pt"
 
         torch.save(model.state_dict(), PATH)
 
@@ -120,10 +120,10 @@ dataset = EmotionDataset(
     '/mount/arbeitsdaten/studenten1/team-lab-phonetics/2021/student_directories/Lyonel_Behringer/advanced-ml/iemocap_across_500_dur_4_spectrograms.json')
 train, test = create_classification_set(dataset)
 num_classes = 4
-model = EmotionClassificationNet(26, 1, 2, 10, 20, num_classes, 26)
-
+model = EmotionClassificationNet(26, 64, 2, 8, 20, num_classes, 26)
+# current best params --> EmotionClassificationNet(26, 1, 2, 10, 20, num_classes, 26)
 #print(classification_training(model, 100, train))
-print(evaluate(model, test, 'state_dict_model_classification_iemocap_100ep_lr0_001.pt'))
+print(evaluate(model, test, 'state_dict_model_classification_iemocap_100ep_20_08_21_11_28am.pt'))
 
 #labels_gen_map = {'m': 0, 'f': 1}
 #labels_gen1 = torch.FloatTensor([float(labels_gen_map[label]) for label in sample1[2]])

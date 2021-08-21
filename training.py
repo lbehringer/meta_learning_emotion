@@ -12,7 +12,7 @@ from scipy.spatial import distance
 
 
 def train(model, num_epochs, dataloader_train1, dataloader_train2, support, query, path):
-    #model.load_state_dict(torch.load('state_dict_model_marg4.pt')) # continue training with model 
+    model.load_state_dict(torch.load('state_dict_model_meta_pavoque_21_08_emb100_iemo_pre.pt')) # continue training with model 
     model.train()
     labels_emo_map = {'sad': 0, 'ang': 1, 'hap': 2, 'neu': 3, 'pok': 4}
    
@@ -26,11 +26,12 @@ def train(model, num_epochs, dataloader_train1, dataloader_train2, support, quer
 
     optimizer = optim.Adam(model.parameters(), lr=0.001,
                            weight_decay=0.00001, betas=(0.9, 0.98), eps=1e-9)
-    criterion = ContrastiveLoss(4)
-    #criterion = ContrastiveLossCosine()
+    # criterion = ContrastiveLoss(4)
+    criterion = torch.nn.CosineEmbeddingLoss()
+    # Measures the loss given an input tensor x and a labels tensor y (containing 1 or -1)
    
-    scheduler = ReduceLROnPlateau(
-        optimizer, mode='min', patience=3, factor=0.1, verbose=True)
+    #scheduler = ReduceLROnPlateau(
+    #    optimizer, mode='min', patience=3, factor=0.1, verbose=True)
 
     train_loss_list = []
     for epoch in range(num_epochs):
@@ -42,21 +43,23 @@ def train(model, num_epochs, dataloader_train1, dataloader_train2, support, quer
             label_emo2 = torch.FloatTensor(
                 [float(labels_emo_map[label]) for label in sample2[1]])
             
-            if label_emo1 == label_emo2:
-                label = 1
-            else:
-                label = 0
+            targets = list()
+            for label1, label2 in zip(label_emo1, label_emo2):
+                if label1 == label2:
+                    targets.append(1)
+                else:
+                    targets.append(-1)
+            targets = torch.FloatTensor(targets)
      
-            #print(label_emo1, label_emo2)
-
+            #print(targets)
             spec_features1 = sample1[0]
             spec_features2 = sample2[0]
-           
+            #print(spec_features1.shape)
            
        
-            spec_features1, spec_features2, label_emo1, label_emo2 = spec_features1.to(
+            spec_features1, spec_features2, label_emo1, label_emo2, targets = spec_features1.to(
                 device, dtype=torch.float), spec_features2.to(
-                device, dtype=torch.float), label_emo1.to(device), label_emo2.to(device)
+                device, dtype=torch.float), label_emo1.to(device), label_emo2.to(device), targets.to(device)
             
             
             spec_features1.requires_grad = True
@@ -66,17 +69,20 @@ def train(model, num_epochs, dataloader_train1, dataloader_train2, support, quer
             optimizer.zero_grad()
 
             # model output
-            emotion_embedding1, emotion_embedding2 = model(spec_features1, spec_features2)
 
-            
+            emotion_embedding1, emotion_embedding2 = model(spec_features1, spec_features2) # siamese
+            #emotion_embedding1 = model(spec_features1)
+            #emotion_embedding2 = model(spec_features2)
+
+            #print(emotion_embedding1)
             #print(f'emotion embedding1: {emotion_embedding1}')
             #print(f'emotion embedding2: {emotion_embedding2}')
 
-            emotion_embedding1 = torch.unsqueeze(emotion_embedding1, 0)
-            emotion_embedding2 = torch.unsqueeze(emotion_embedding2, 0)
+            #emotion_embedding1 = torch.unsqueeze(emotion_embedding1, 0)
+            #emotion_embedding2 = torch.unsqueeze(emotion_embedding2, 0)
           
             # calculate loss
-            loss = criterion(emotion_embedding1, emotion_embedding2, label)
+            loss = criterion(emotion_embedding1, emotion_embedding2, targets)
 
             loss.backward()
             # update model weights
@@ -96,8 +102,6 @@ def train(model, num_epochs, dataloader_train1, dataloader_train2, support, quer
     
         torch.save(model.state_dict(), path)
         #evaluate(model, support, query, path)
-
-
 
 
 def evaluate(model, support, query, PATH):

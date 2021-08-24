@@ -12,6 +12,8 @@ from scipy.spatial import distance
 from dataset import EmotionDataset, create_classification_set, create_train_test
 from classification_model import EmotionClassificationNet
 import matplotlib.pyplot as plt
+from sklearn.metrics import confusion_matrix
+import seaborn as sns
 
 
 def classification_training(model, num_epochs, dataloader_train, PATH):

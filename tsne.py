@@ -113,25 +113,25 @@ def tsne(in_file, out_file, embedding_size, perplexity, iter):
 	data_subset['label'] = df_features['label'].values
 
 
-
 	# TSNE
 	tsne = TSNE(n_components=2, verbose=1, perplexity=perplexity, n_iter=iter)
 	tsne_results = tsne.fit_transform(data_subset[feat_cols])  # this should be df_features[feat_cols].values
 	#print(tsne_results)
 	#print(data_subset.shape)
-	tsne_2d_one = tsne_results[:,0]
-	tsne_2d_two = tsne_results[:,1]
-	data_subset['tsne-2d-one'] = tsne_2d_one
+	x = tsne_results[:,0]
+	y = tsne_results[:,1]
+	data_subset['x'] = x
 	#print(data_subset['tsne-2d-one'])
-	data_subset['tsne-2d-two'] = tsne_2d_two
+	data_subset['y'] = y
 
-	plt.figure(figsize=(16,10))
+	plt.figure(figsize=(6, 4))
 	sns.scatterplot(
-		x="tsne-2d-one", y="tsne-2d-two",
+		x="x", y="y",
 		hue="label",
-		palette=sns.color_palette("hls", num_labels),
+		#palette=sns.color_palette("colorblind", num_labels),
+		palette=sns.hls_palette(n_colors=num_labels, h=0.01, l=0.5, s=1.0),
 		data=data_subset,
-		legend="full",
+		legend="brief",
 		alpha=0.3
 	)
 

@@ -1,7 +1,7 @@
 import argparse
 import numpy as np
 from model import CNN_BLSTM_SELF_ATTN, Siamese
-from dataset import EmotionDataset, create_train_test, iemocap_across, iemocap_across_support, pavoque_across, pavoque_across_support, singapore_emo_zh, singapore_emo_en, singapore_emo_en_support, singapore_emo_zh_support, pavoque_all
+from dataset import *
 import torch
 from classification_model import EmotionClassificationNet
 from torch.utils.data.dataset import random_split
@@ -13,8 +13,8 @@ from tsne import tsne
 def main(args):
     torch.manual_seed(99)
     # load dataset, split into train & test
-    dataset = EmotionDataset(singapore_emo_zh)
-    support_data = EmotionDataset(singapore_emo_zh_support)
+    dataset = EmotionDataset(pavoque_all)
+    support_data = EmotionDataset(pavoque_all_support)
 
     query_set, train1, train2 = create_train_test(dataset)
     support_set = torch.utils.data.DataLoader(support_data, batch_size=1,
@@ -34,15 +34,17 @@ def main(args):
 
     if args.evaluate:
         confusion_file = "confusion_" + args.file_name + ".png"
-        evaluate(model, support_set, query_set, trained_model_name, confusion_file)
+        evaluate(model, support_set, query_set,
+                 trained_model_name, confusion_file)
 
     # get embeddings & visualize with tsne
     embeddings_file = "embeddings_" + args.file_name + ".json"
     tsne_plot_file = "tsne_plot_" + args.file_name + ".png"
     if args.embeddings2file:
-        model.load_state_dict(torch.load(trained_model_name)) # , map_location=torch.device('cpu')))
+        # , map_location=torch.device('cpu')))
+        model.load_state_dict(torch.load(trained_model_name))
         write_embeddings(model, query_set, embeddings_file)
-        tsne(embeddings_file, tsne_plot_file, args.embedding_size, 10, 1000)
+        tsne(embeddings_file, tsne_plot_file, args.embedding_size, 15, 1000)
 
 
 if __name__ == "__main__":
@@ -69,15 +71,15 @@ if __name__ == "__main__":
                         required=False, type=int, help="gender classes --> m & f")
     parser.add_argument("--embedding_size", default=150,
                         required=False, type=int, help="embedding size for emotion embeddings")
-    parser.add_argument("--num_epochs", default=1500,
+    parser.add_argument("--num_epochs", default=1200,
                         required=False, type=int, help="num_epochs")
-    parser.add_argument("--embeddings2file", default=False,
+    parser.add_argument("--embeddings2file", default=True,
                         required=False, type=bool, help="write embeddings to file?")
-    parser.add_argument("--train", default=False,
+    parser.add_argument("--train", default=True,
                         required=False, type=bool, help="train model?")
     parser.add_argument("--evaluate", default=True,
                         required=False, type=bool, help="evaluate model?")
-    parser.add_argument("--file_name", default="meta_singapore_zh_1500ep_emb150_batch32",
+    parser.add_argument("--file_name", default="meta_pavoque_all_1200ep_emb150_batch32",
                         required=False, type=str, help="file name for model, embedding and plot file")
 
     args = parser.parse_args()

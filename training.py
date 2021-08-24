@@ -14,7 +14,8 @@ import seaborn as sns
 
 
 def train(model, num_epochs, dataloader_train1, dataloader_train2, support, query, path):
-    #model.load_state_dict(torch.load('state_dict_model_meta_singapore_en_1200ep_emb150_batch32.pt')) # continue training with model
+    # continue training with model
+    # model.load_state_dict(torch.load('state_dict_model_meta_singapore_en_1200ep_emb150_batch32.pt'))
     model.train()
     labels_emo_map = {'sad': 0, 'ang': 1, 'hap': 2, 'neu': 3, 'pok': 4}
 
@@ -105,7 +106,6 @@ def train(model, num_epochs, dataloader_train1, dataloader_train2, support, quer
 
 def evaluate(model, support, query, PATH, confusion_file):
     labels_emo_map = {'sad': 0, 'ang': 1, 'hap': 2, 'neu': 3, 'pok': 4}
-    labels_emo_map_reversed = {0: 'sad', 1: 'ang', 2: 'hap', 3: 'neu', 4: 'pok'}
 
     with torch.no_grad():
         model.load_state_dict(torch.load(PATH))
@@ -147,25 +147,17 @@ def evaluate(model, support, query, PATH, confusion_file):
 
         print(f'predictions: {y_pred}')
         print(f'gold label: {y_true}')
-        f_score = f1_score(y_true, y_pred, average=None)
-        print(f'f_score: {f_score}')
+        f_score_classes = f1_score(y_true, y_pred, average=None)
+        f_score = f1_score(y_true, y_pred, average='macro')
+        print(f'f_score per class: {f_score_classes}')
+        print(f'f_score overall: {f_score}')
+        x_axis_labels = ['sad', 'ang', 'hap', 'neu', 'sur']  # labels for x-axis
+        y_axis_labels = ['sad', 'ang', 'hap', 'neu', 'sur']
 
-        '''
-        classes_pred = list()
-        classes_true = list()
-        for pred, gold in zip(y_pred, y_true):
-            classes_pred.append(labels_emo_map_reversed[pred])
-            classes_true.append(labels_emo_map_reversed[gold])
-
-        print(classes_true)
-        '''
-        x_axis_labels = ['sad', 'ang', 'hap', 'neu'] # labels for x-axis
-        y_axis_labels = ['sad', 'ang', 'hap', 'neu']
-
-        #Get the confusion matrix
-        cf_matrix = confusion_matrix(y_true, y_pred)
+        # Get the confusion matrix
+        cf_matrix = confusion_matrix(y_true, y_pred, normalize='true')
         print(cf_matrix)
-        svm = sns.heatmap(cf_matrix/np.sum(cf_matrix), annot=True, 
-            fmt='.2%', cmap='Blues', xticklabels=x_axis_labels, yticklabels=y_axis_labels)
-        figure = svm.get_figure()    
+        svm = sns.heatmap(cf_matrix/np.sum(cf_matrix), annot=True,
+                          fmt='.2%', cmap='Blues', xticklabels=x_axis_labels, yticklabels=y_axis_labels)
+        figure = svm.get_figure()
         figure.savefig(confusion_file, dpi=400)

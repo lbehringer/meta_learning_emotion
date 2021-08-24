@@ -4,17 +4,33 @@ from torch.utils.data import Dataset
 import numpy as np
 from torch.utils.data.dataset import random_split
 
-
+# datasets
+# english 
+# m&f
 iemocap_across = '/mount/arbeitsdaten/studenten1/team-lab-phonetics/2021/student_directories/Lyonel_Behringer/advanced-ml/iemocap_across_500_dur_4_spectrograms.json'
 iemocap_across_support = '/mount/arbeitsdaten/studenten1/advanced_ml/dengelva/meta_learning_emotion/data/iemocap/iemocap_across_502_dur_4_support.json'
+singapore_emo_en = '/mount/arbeitsdaten/studenten1/advanced_ml/dengelva/meta_learning_emotion/data/singaporeESD/en/mixed/merged_en.json'
+singapore_emo_en_support = '/mount/arbeitsdaten/studenten1/advanced_ml/dengelva/meta_learning_emotion/data/support_merged_en.json'
+# m
+singapore_emo_en_m_across = '/mount/arbeitsdaten/studenten1/advanced_ml/dengelva/meta_learning_emotion/data/singaporeESD/en/m/merged_query_en_m.json'
+singapore_emo_en_m_support_across = '/mount/arbeitsdaten/studenten1/advanced_ml/dengelva/meta_learning_emotion/data/singaporeESD/en/m/merged_support_en.json'
+#german 
+# m 
 pavoque_across = '/mount/arbeitsdaten/studenten1/advanced_ml/dengelva/meta_learning_emotion/data/pavoque/pavoque_across_500_dur_4_preemph_norm_0to1.json'
 pavoque_across_support = '/mount/arbeitsdaten/studenten1/advanced_ml/dengelva/meta_learning_emotion/data/pavoque/pavoque_across_500_dur_4_preemph_support_norm_0to1.json'
 pavoque_all = '/mount/arbeitsdaten/studenten1/advanced_ml/dengelva/meta_learning_emotion/data/pavoque/pavoque_all_500_dur_4_preemph_norm_0to1.json'
-pavoque_all_support = ""
-singapore_emo_en = '/mount/arbeitsdaten/studenten1/advanced_ml/dengelva/meta_learning_emotion/data/merged_en.json'
-singapore_emo_zh = '/mount/arbeitsdaten/studenten1/advanced_ml/dengelva/meta_learning_emotion/data/merged_zh.json'
-singapore_emo_en_support = '/mount/arbeitsdaten/studenten1/advanced_ml/dengelva/meta_learning_emotion/data/support_merged_en.json'
-singapore_emo_zh_support = '/mount/arbeitsdaten/studenten1/advanced_ml/dengelva/meta_learning_emotion/data/support_merged_zh.json'
+pavoque_all_support = '/mount/arbeitsdaten/studenten1/advanced_ml/dengelva/meta_learning_emotion/data/pavoque/pavoque_all_500_dur_4_preemph_support_norm_0to1.json'
+# chinese
+# only male
+singapore_emo_zh_m_across = '/mount/arbeitsdaten/studenten1/advanced_ml/dengelva/meta_learning_emotion/data/merged_query_zh_m.json'
+singapore_emo_zh_support_m_across = '/mount/arbeitsdaten/studenten1/advanced_ml/dengelva/meta_learning_emotion/data/merged_support_zh_m2.json'
+# m&f
+singapore_emo_zh_across = '/mount/arbeitsdaten/studenten1/advanced_ml/dengelva/meta_learning_emotion/data/merged_zh.json'
+singapore_emo_zh_support_across = '/mount/arbeitsdaten/studenten1/advanced_ml/dengelva/meta_learning_emotion/data/support_merged_zh.json'
+# only female
+singapore_emo_zh_f_across = '/mount/arbeitsdaten/studenten1/advanced_ml/dengelva/meta_learning_emotion/data/singaporeESD/zh/f/merged_query_zh_f.json'
+singapore_emo_zh_support_f_across = '/mount/arbeitsdaten/studenten1/advanced_ml/dengelva/meta_learning_emotion/data/merged_support_zh_f.json'
+singapore_emo_zh_support_f2_across = '/mount/arbeitsdaten/studenten1/advanced_ml/dengelva/meta_learning_emotion/data/merged_support_zh_f2.json'
 
 
 class EmotionDataset(Dataset):

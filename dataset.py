@@ -5,6 +5,11 @@ import numpy as np
 from torch.utils.data.dataset import random_split
 
 # datasets
+# combined
+# chinese & german, m&f
+combined_de_zh = '/mount/arbeitsdaten/studenten1/advanced_ml/behrinll/meta_learning_emotion/data/across_corpus/zh-de_mixed_500.json'
+#chinese, german & english, m&f
+combined_de_en_zh = '/mount/arbeitsdaten/studenten1/advanced_ml/behrinll/meta_learning_emotion/data/across_corpus/zh-de-en_mixed_500.json'
 # english 
 # m&f
 iemocap_across = '/mount/arbeitsdaten/studenten1/team-lab-phonetics/2021/student_directories/Lyonel_Behringer/advanced-ml/iemocap_across_500_dur_4_spectrograms.json'

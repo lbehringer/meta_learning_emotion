@@ -14,7 +14,7 @@ from classification_model import EmotionClassificationNet
 import matplotlib.pyplot as plt
 
 
-def classification_training(model, num_epochs, dataloader_train):
+def classification_training(model, num_epochs, dataloader_train, PATH):
     # model.load_state_dict(torch.load('state_dict_model_classification_iemocap.pt')) # continue training with model
     model.train()
     labels_emo_map = {'sad': 0, 'ang': 1, 'hap': 2, 'neu': 3, 'pok': 4}
@@ -77,7 +77,7 @@ def classification_training(model, num_epochs, dataloader_train):
         print('Loss {} after {} epochs'.format(
             np.mean(np.asarray(mean_loss)), epoch))
 
-        PATH = "state_dict_model_classification_iemocap_100ep_20_08_21_11_28am.pt"
+        #PATH = "state_dict_model_classification_iemocap_500ep_20_08_21_11_28am.pt"
 
         torch.save(model.state_dict(), PATH)
 
@@ -115,15 +115,27 @@ def evaluate(model, test, PATH):
         score = f1_score(y_true, y_pred, average='macro')
         print(f'f_score: {score}')
 
+        x_axis_labels = ['sad', 'ang', 'hap', 'neu'] 
+        y_axis_labels = ['sad', 'ang', 'hap', 'neu']
 
+        #Get the confusion matrix
+        cf_matrix = confusion_matrix(y_true, y_pred, normalize='true')
+        print(cf_matrix)
+        svm = sns.heatmap(cf_matrix/np.sum(cf_matrix), annot=True, 
+            fmt='.2%', cmap='Blues', xticklabels=x_axis_labels, yticklabels=y_axis_labels)
+        figure = svm.get_figure()    
+        figure.savefig(confusion_file, dpi=400)
+
+
+model_path = 'state_dict_model_classification_iemocap_300ep_batch8.pt'
 dataset = EmotionDataset(
     '/mount/arbeitsdaten/studenten1/team-lab-phonetics/2021/student_directories/Lyonel_Behringer/advanced-ml/iemocap_across_500_dur_4_spectrograms.json')
 train, test = create_classification_set(dataset)
 num_classes = 4
 model = EmotionClassificationNet(26, 64, 2, 8, 20, num_classes, 26)
 # current best params --> EmotionClassificationNet(26, 1, 2, 10, 20, num_classes, 26)
-#print(classification_training(model, 100, train))
-print(evaluate(model, test, 'state_dict_model_classification_iemocap_100ep_20_08_21_11_28am.pt'))
+print(classification_training(model, 300, train, model_path))
+print(evaluate(model, test, model_path))
 
 #labels_gen_map = {'m': 0, 'f': 1}
 #labels_gen1 = torch.FloatTensor([float(labels_gen_map[label]) for label in sample1[2]])

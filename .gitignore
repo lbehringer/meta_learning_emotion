@@ -1,6 +1,6 @@
 advanced-ml/pavoque_*.json
 data
-*embeddings*.json
+*.json
 *.pyc
 *.swp
 Emotional_Speech_Dataset_Singapore

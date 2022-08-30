@@ -6,3 +6,6 @@ data
 Emotional_Speech_Dataset_Singapore
 Pavoque_Emotional_German
 iemocap
+test.wav
+IEMOCAP_labels
+*.png
